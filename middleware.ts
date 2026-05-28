@@ -1,8 +1,25 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
+const isSupabaseConfigured = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return !!(
+    url &&
+    key &&
+    !url.includes("placeholder") &&
+    !key.includes("placeholder") &&
+    url.startsWith("https://")
+  );
+};
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
+
+  // If Supabase isn't configured, skip auth checks
+  if (!isSupabaseConfigured()) {
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,13 +40,18 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const protectedPaths = ["/dashboard", "/create", "/profile"];
-  const isProtected = protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p));
+    const protectedPaths = ["/dashboard", "/create", "/profile"];
+    const isProtected = protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p));
 
-  if (isProtected && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    if (isProtected && !user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  } catch (error) {
+    // If auth check fails, allow the request through
+    console.error("Middleware auth error:", error);
   }
 
   return response;
