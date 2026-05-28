@@ -1,0 +1,282 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase-client";
+import { Upload, FileText, X, Loader2, Sparkles, Globe, Brain, ChevronLeft } from "lucide-react";
+
+type FileItem = {
+  file: File;
+  name: string;
+  size: number;
+};
+
+export default function CreateTestPage() {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [numQuestions, setNumQuestions] = useState(10);
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [timeLimit, setTimeLimit] = useState(0);
+  const [useWebSearch, setUseWebSearch] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState("");
+  const [error, setError] = useState("");
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files || []);
+    const newFiles = selected.map((f) => ({ file: f, name: f.name, size: f.size }));
+    setFiles((prev) => [...prev, ...newFiles]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function handleGenerate() {
+    if (files.length === 0) {
+      setError("יש להעלות לפחות קובץ אחד");
+      return;
+    }
+    setLoading(true);
+    setError("");
+
+    try {
+      // Step 1: Upload and parse files
+      setProgress("מנתח את הקבצים...");
+      const formData = new FormData();
+      files.forEach((f) => formData.append("files", f.file));
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!uploadRes.ok) throw new Error("שגיאה בעיבוד הקבצים");
+      const { content } = await uploadRes.json();
+
+      // Step 2: Optionally expand with web search
+      let additionalContext = "";
+      if (useWebSearch) {
+        setProgress("מחפש מקורות נוספים באינטרנט...");
+        const searchRes = await fetch("/api/web-search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: content.slice(0, 5000) }),
+        });
+        if (searchRes.ok) {
+          const data = await searchRes.json();
+          additionalContext = data.expanded || "";
+        }
+      }
+
+      // Step 3: Generate questions
+      setProgress(`יוצר ${numQuestions} שאלות חכמות...`);
+      const generateRes = await fetch("/api/generate-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          additionalContext,
+          numQuestions,
+          difficulty,
+          timeLimit,
+        }),
+      });
+
+      if (!generateRes.ok) {
+        const err = await generateRes.json();
+        throw new Error(err.error || "שגיאה ביצירת המבחן");
+      }
+
+      const { testId } = await generateRes.json();
+      setProgress("הצלחה! מעביר אותך למבחן...");
+      router.push(`/share/${testId}`);
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-50 glass border-b border-slate-200/50">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/dashboard" className="btn-ghost">
+            <ChevronLeft className="w-4 h-4" />
+            חזרה
+          </Link>
+          <h1 className="text-xl font-bold gradient-text">צור מבחן חדש</h1>
+          <div className="w-20" />
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-6 py-8">
+        {loading ? (
+          <div className="card text-center py-16">
+            <Loader2 className="w-16 h-16 mx-auto text-primary-500 animate-spin mb-6" />
+            <h2 className="text-2xl font-bold mb-2">יוצר את המבחן שלך</h2>
+            <p className="text-slate-600">{progress}</p>
+            <div className="mt-8 max-w-md mx-auto text-sm text-slate-500 text-right space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" /> ניתוח הקבצים
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" /> יצירת שאלות עם Claude AI
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-slate-300" /> שמירה במסד הנתונים
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Step 1: Upload Files */}
+            <div className="card mb-6 animate-slide-up">
+              <h2 className="text-xl font-bold mb-1">1. העלה חומרי לימוד</h2>
+              <p className="text-slate-600 text-sm mb-4">PDF, Word, או טקסט · עד 10 קבצים</p>
+
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50/50 transition-all"
+              >
+                <Upload className="w-12 h-12 mx-auto text-slate-400 mb-3" />
+                <div className="font-medium">לחץ כדי להעלות קבצים</div>
+                <div className="text-sm text-slate-500 mt-1">או גרור לכאן</div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.docx,.doc,.txt,.md"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
+
+              {files.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {files.map((f, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                      <FileText className="w-5 h-5 text-primary-500" />
+                      <div className="flex-1 truncate">
+                        <div className="font-medium text-sm">{f.name}</div>
+                        <div className="text-xs text-slate-500">{(f.size / 1024).toFixed(1)} KB</div>
+                      </div>
+                      <button onClick={() => removeFile(i)} className="text-red-500 hover:bg-red-50 p-1 rounded">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Step 2: Settings */}
+            <div className="card mb-6 animate-slide-up">
+              <h2 className="text-xl font-bold mb-4">2. הגדרות המבחן</h2>
+
+              <div className="space-y-6">
+                {/* Num questions */}
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="font-medium">מספר שאלות</label>
+                    <span className="text-2xl font-bold gradient-text">{numQuestions}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="50"
+                    step="5"
+                    value={numQuestions}
+                    onChange={(e) => setNumQuestions(Number(e.target.value))}
+                    className="w-full accent-primary-500"
+                  />
+                  <div className="flex justify-between text-xs text-slate-500 mt-1">
+                    <span>5</span>
+                    <span>50</span>
+                  </div>
+                </div>
+
+                {/* Difficulty */}
+                <div>
+                  <label className="font-medium block mb-2">רמת קושי</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: "easy", label: "קל", emoji: "😊" },
+                      { value: "medium", label: "בינוני", emoji: "🤔" },
+                      { value: "hard", label: "קשה", emoji: "🔥" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setDifficulty(opt.value as any)}
+                        className={`p-3 rounded-xl border-2 transition-all ${
+                          difficulty === opt.value
+                            ? "border-primary-500 bg-primary-50"
+                            : "border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="text-2xl">{opt.emoji}</div>
+                        <div className="text-sm font-medium mt-1">{opt.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Time limit */}
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="font-medium">הגבלת זמן (דקות)</label>
+                    <span className="font-bold">{timeLimit === 0 ? "ללא הגבלה" : `${timeLimit} דק'`}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="60"
+                    step="5"
+                    value={timeLimit}
+                    onChange={(e) => setTimeLimit(Number(e.target.value))}
+                    className="w-full accent-primary-500"
+                  />
+                </div>
+
+                {/* Web search */}
+                <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-primary-300 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={useWebSearch}
+                    onChange={(e) => setUseWebSearch(e.target.checked)}
+                    className="w-5 h-5 accent-primary-500"
+                  />
+                  <Globe className="w-5 h-5 text-primary-500" />
+                  <div className="flex-1">
+                    <div className="font-medium">הרחבת מקורות מהאינטרנט</div>
+                    <div className="text-xs text-slate-500">חיפוש מידע נוסף להעמקת התוכן</div>
+                  </div>
+                  <span className="badge-chip bg-amber-100 text-amber-700">חדש!</span>
+                </label>
+              </div>
+            </div>
+
+            {error && (
+              <div className="card bg-red-50 border-red-200 text-red-700 mb-6">
+                {error}
+              </div>
+            )}
+
+            {/* Generate button */}
+            <button
+              onClick={handleGenerate}
+              disabled={files.length === 0}
+              className="btn-primary w-full text-xl py-4 animate-pulse-glow"
+            >
+              <Sparkles className="w-6 h-6" />
+              צור מבחן חכם עכשיו
+              <Brain className="w-6 h-6" />
+            </button>
+
+            <p className="text-center text-sm text-slate-500 mt-4">
+              💡 ייצור המבחן עשוי לקחת 20-60 שניות בהתאם להיקף החומר
+            </p>
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
