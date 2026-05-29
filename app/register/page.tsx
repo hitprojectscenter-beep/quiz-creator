@@ -21,7 +21,7 @@ export default function RegisterPage() {
     setError("");
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -37,7 +37,12 @@ export default function RegisterPage() {
 
     setSuccess(true);
     setLoading(false);
-    setTimeout(() => router.push("/dashboard"), 1500);
+
+    // If user has session, go to dashboard. Otherwise show "check email"
+    if (data.session) {
+      setTimeout(() => router.push("/dashboard"), 1500);
+    }
+    // If no session, the success state shows "check your email" message
   }
 
   return (
@@ -56,9 +61,19 @@ export default function RegisterPage() {
 
           {success ? (
             <div className="bg-emerald-50 text-emerald-700 px-4 py-6 rounded-xl text-center">
-              <div className="text-3xl mb-2">🎉</div>
-              <div className="font-bold">נרשמת בהצלחה!</div>
-              <div className="text-sm mt-1">מעביר אותך לדשבורד...</div>
+              <div className="text-4xl mb-2">📧</div>
+              <div className="font-bold text-lg">בדוק את המייל שלך!</div>
+              <div className="text-sm mt-2 leading-relaxed">
+                שלחנו קישור אימות ל-<strong>{email}</strong>
+                <br />
+                לחץ עליו כדי להפעיל את החשבון, ואז תוכל להתחבר.
+              </div>
+              <div className="text-xs mt-4 text-emerald-600">
+                💡 לא רואה? בדוק בתיקיית הספאם
+              </div>
+              <Link href="/login" className="btn-primary mt-4 inline-flex">
+                למסך התחברות
+              </Link>
             </div>
           ) : (
             <>

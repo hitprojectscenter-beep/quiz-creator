@@ -3,8 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase-client";
-import { Upload, FileText, X, Loader2, Sparkles, Globe, Brain, ChevronLeft } from "lucide-react";
+import { Upload, FileText, X, Loader2, Sparkles, Globe, Brain, ChevronLeft, Image as ImageIcon, Tag } from "lucide-react";
 
 type FileItem = {
   file: File;
@@ -15,7 +14,11 @@ type FileItem = {
 export default function CreateTestPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
+  const [testTitle, setTestTitle] = useState("");
+  const [logoData, setLogoData] = useState<string | null>(null);
+  const [logoName, setLogoName] = useState<string>("");
   const [numQuestions, setNumQuestions] = useState(10);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const [timeLimit, setTimeLimit] = useState(0);
@@ -33,6 +36,35 @@ export default function CreateTestPage() {
 
   function removeFile(index: number) {
     setFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 500 * 1024) {
+      setError("גודל הלוגו לא יכול לעלות על 500KB");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("חובה להעלות קובץ תמונה (PNG, JPG, SVG)");
+      return;
+    }
+
+    setError("");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setLogoData(ev.target?.result as string);
+      setLogoName(file.name);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeLogo() {
+    setLogoData(null);
+    setLogoName("");
+    if (logoInputRef.current) logoInputRef.current.value = "";
   }
 
   async function handleGenerate() {
@@ -55,7 +87,7 @@ export default function CreateTestPage() {
       // Step 2: Optionally expand with web search
       let additionalContext = "";
       if (useWebSearch) {
-        setProgress("מחפש מקורות נוספים באינטרנט...");
+        setProgress("מחפש שאלות דומות באינטרנט...");
         const searchRes = await fetch("/api/web-search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -78,6 +110,8 @@ export default function CreateTestPage() {
           numQuestions,
           difficulty,
           timeLimit,
+          customTitle: testTitle.trim() || null,
+          logoData,
         }),
       });
 
@@ -87,7 +121,7 @@ export default function CreateTestPage() {
       }
 
       const { testId } = await generateRes.json();
-      setProgress("הצלחה! מעביר אותך למבחן...");
+      setProgress("הצלחה! מעביר אותך לעמוד השיתוף...");
       router.push(`/share/${testId}`);
     } catch (err: any) {
       setError(err.message);
@@ -128,10 +162,72 @@ export default function CreateTestPage() {
           </div>
         ) : (
           <>
-            {/* Step 1: Upload Files */}
+            {/* Step 1: Title + Logo */}
             <div className="card mb-6 animate-slide-up">
-              <h2 className="text-xl font-bold mb-1">1. העלה חומרי לימוד</h2>
-              <p className="text-slate-600 text-sm mb-4">PDF, Word, או טקסט · עד 10 קבצים</p>
+              <h2 className="text-xl font-bold mb-1">1. פרטי המבחן</h2>
+              <p className="text-slate-600 text-sm mb-4">תן שם למבחן והעלה לוגו (אופציונלי)</p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {/* Logo upload - top-left */}
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium mb-2">
+                    <ImageIcon className="w-4 h-4 inline ml-1" />
+                    לוגו המבחן
+                  </label>
+                  {logoData ? (
+                    <div className="relative aspect-square rounded-xl border-2 border-primary-300 bg-white p-3 flex items-center justify-center group">
+                      <img src={logoData} alt="logo" className="max-w-full max-h-full object-contain" />
+                      <button
+                        onClick={removeLogo}
+                        className="absolute top-1 left-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => logoInputRef.current?.click()}
+                      className="aspect-square border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50/50 transition-all"
+                    >
+                      <ImageIcon className="w-8 h-8 text-slate-400 mb-1" />
+                      <div className="text-xs text-slate-500 text-center px-2">לחץ להעלאת לוגו</div>
+                      <div className="text-xs text-slate-400 mt-1">עד 500KB</div>
+                    </div>
+                  )}
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoSelect}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Title input */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">
+                    <Tag className="w-4 h-4 inline ml-1" />
+                    שם המבחן
+                  </label>
+                  <input
+                    type="text"
+                    value={testTitle}
+                    onChange={(e) => setTestTitle(e.target.value)}
+                    placeholder="לדוגמה: מבחן בהיסטוריה - שיעור 3"
+                    maxLength={100}
+                    className="input"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    {testTitle ? `${testTitle.length}/100` : "אם תשאיר ריק, AI יציע שם אוטומטית"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2: Upload Files */}
+            <div className="card mb-6 animate-slide-up">
+              <h2 className="text-xl font-bold mb-1">2. העלה חומרי לימוד</h2>
+              <p className="text-slate-600 text-sm mb-4">PDF, Word, או טקסט · ניתן להעלות מספר קבצים</p>
 
               <div
                 onClick={() => fileInputRef.current?.click()}
@@ -168,12 +264,11 @@ export default function CreateTestPage() {
               )}
             </div>
 
-            {/* Step 2: Settings */}
+            {/* Step 3: Settings */}
             <div className="card mb-6 animate-slide-up">
-              <h2 className="text-xl font-bold mb-4">2. הגדרות המבחן</h2>
+              <h2 className="text-xl font-bold mb-4">3. הגדרות המבחן</h2>
 
               <div className="space-y-6">
-                {/* Num questions */}
                 <div>
                   <div className="flex justify-between mb-2">
                     <label className="font-medium">מספר שאלות</label>
@@ -194,7 +289,6 @@ export default function CreateTestPage() {
                   </div>
                 </div>
 
-                {/* Difficulty */}
                 <div>
                   <label className="font-medium block mb-2">רמת קושי</label>
                   <div className="grid grid-cols-3 gap-2">
@@ -219,7 +313,6 @@ export default function CreateTestPage() {
                   </div>
                 </div>
 
-                {/* Time limit */}
                 <div>
                   <div className="flex justify-between mb-2">
                     <label className="font-medium">הגבלת זמן (דקות)</label>
@@ -236,7 +329,6 @@ export default function CreateTestPage() {
                   />
                 </div>
 
-                {/* Web search */}
                 <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-primary-300 transition-all">
                   <input
                     type="checkbox"
@@ -246,10 +338,10 @@ export default function CreateTestPage() {
                   />
                   <Globe className="w-5 h-5 text-primary-500" />
                   <div className="flex-1">
-                    <div className="font-medium">הרחבת מקורות מהאינטרנט</div>
-                    <div className="text-xs text-slate-500">חיפוש מידע נוסף להעמקת התוכן</div>
+                    <div className="font-medium">חיפוש שאלות דומות באינטרנט</div>
+                    <div className="text-xs text-slate-500">הרחבת התוכן עם מידע נוסף ויצירת שאלות מגוונות יותר</div>
                   </div>
-                  <span className="badge-chip bg-amber-100 text-amber-700">חדש!</span>
+                  <span className="badge-chip bg-amber-100 text-amber-700">🌐</span>
                 </label>
               </div>
             </div>
@@ -260,7 +352,6 @@ export default function CreateTestPage() {
               </div>
             )}
 
-            {/* Generate button */}
             <button
               onClick={handleGenerate}
               disabled={files.length === 0}

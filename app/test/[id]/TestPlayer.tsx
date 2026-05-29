@@ -79,10 +79,18 @@ export default function TestPlayer({ test }: { test: any }) {
       <header className="sticky top-0 z-50 glass border-b border-slate-200/50">
         <div className="max-w-4xl mx-auto px-6 py-3">
           <div className="flex items-center justify-between mb-2">
-            <Link href="/dashboard" className="btn-ghost text-sm">
-              <ChevronRight className="w-4 h-4" />
-              צא
-            </Link>
+            <div className="flex items-center gap-2">
+              {/* Logo top-left */}
+              {test.logo_data && (
+                <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 p-1 flex items-center justify-center">
+                  <img src={test.logo_data} alt="logo" className="max-w-full max-h-full object-contain" />
+                </div>
+              )}
+              <Link href="/dashboard" className="btn-ghost text-sm">
+                <ChevronRight className="w-4 h-4" />
+                צא
+              </Link>
+            </div>
             <div className="text-center">
               <div className="font-bold text-sm">{test.title}</div>
               <div className="text-xs text-slate-500">

@@ -14,17 +14,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "לא מאומת" }, { status: 401 });
     }
 
-    const { content, additionalContext, numQuestions, difficulty, timeLimit } = await request.json();
+    const { content, additionalContext, numQuestions, difficulty, timeLimit, customTitle, logoData } = await request.json();
 
     if (!content || numQuestions < 1) {
       return NextResponse.json({ error: "פרמטרים חסרים" }, { status: 400 });
     }
 
-    // Generate title and questions in parallel
-    const [titleData, questions] = await Promise.all([
-      generateTestTitle(content),
+    // Validate logo size if provided
+    if (logoData && logoData.length > 750000) {
+      return NextResponse.json({ error: "הלוגו גדול מדי - מקסימום 500KB" }, { status: 400 });
+    }
+
+    // Generate questions, and title only if not provided
+    const promises: Promise<any>[] = [
       generateQuestions(content, numQuestions, difficulty, additionalContext),
-    ]);
+    ];
+    if (!customTitle) {
+      promises.push(generateTestTitle(content));
+    }
+
+    const results = await Promise.all(promises);
+    const questions = results[0];
+    const titleData = customTitle
+      ? { title: customTitle, description: "" }
+      : results[1];
 
     // Create test record
     const { data: test, error: testError } = await supabase
@@ -36,9 +49,11 @@ export async function POST(request: NextRequest) {
         difficulty,
         time_limit_minutes: timeLimit > 0 ? timeLimit : null,
         is_public: true,
+        allow_anonymous: true,
         share_code: generateShareCode(),
         total_questions: questions.length,
         source_summary: content.slice(0, 500),
+        logo_data: logoData || null,
       })
       .select()
       .single();
@@ -46,7 +61,7 @@ export async function POST(request: NextRequest) {
     if (testError) throw testError;
 
     // Insert questions
-    const questionsToInsert = questions.map((q, i) => ({
+    const questionsToInsert = questions.map((q: any, i: number) => ({
       test_id: test.id,
       question_text: q.question,
       options: q.options,

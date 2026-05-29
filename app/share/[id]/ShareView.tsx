@@ -9,7 +9,7 @@ export default function ShareView({ test }: { test: any }) {
   const [copied, setCopied] = useState(false);
   const [qrUrl, setQrUrl] = useState("");
 
-  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/test/${test.id}` : "";
+  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/q/${test.share_code}` : "";
 
   useEffect(() => {
     if (shareUrl) {
@@ -61,21 +61,31 @@ export default function ShareView({ test }: { test: any }) {
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Test info */}
         <div className="card mb-6 bg-gradient-to-br from-primary-600 to-pink-500 text-white animate-slide-up">
-          <div className="flex items-center gap-2 mb-2">
-            <Share2 className="w-5 h-5" />
-            <span className="text-sm opacity-90">המבחן מוכן לשיתוף</span>
-          </div>
-          <h2 className="text-3xl font-bold mb-2">{test.title}</h2>
-          {test.description && <p className="opacity-90 mb-4">{test.description}</p>}
-          <div className="flex flex-wrap gap-2">
-            <span className="badge-chip bg-white/20">{test.total_questions} שאלות</span>
-            <span className="badge-chip bg-white/20">
-              {test.difficulty === "easy" ? "קל" : test.difficulty === "hard" ? "קשה" : "בינוני"}
-            </span>
-            {test.time_limit_minutes && (
-              <span className="badge-chip bg-white/20">{test.time_limit_minutes} דקות</span>
+          <div className="flex items-start gap-4">
+            {/* Logo - top-left */}
+            {test.logo_data && (
+              <div className="flex-shrink-0 w-20 h-20 rounded-xl bg-white/95 p-2 flex items-center justify-center">
+                <img src={test.logo_data} alt="logo" className="max-w-full max-h-full object-contain" />
+              </div>
             )}
-            <span className="badge-chip bg-white/20">קוד: {test.share_code}</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Share2 className="w-5 h-5" />
+                <span className="text-sm opacity-90">המבחן מוכן לשיתוף</span>
+              </div>
+              <h2 className="text-3xl font-bold mb-2">{test.title}</h2>
+              {test.description && <p className="opacity-90 mb-4">{test.description}</p>}
+              <div className="flex flex-wrap gap-2">
+                <span className="badge-chip bg-white/20">{test.total_questions} שאלות</span>
+                <span className="badge-chip bg-white/20">
+                  {test.difficulty === "easy" ? "קל" : test.difficulty === "hard" ? "קשה" : "בינוני"}
+                </span>
+                {test.time_limit_minutes && (
+                  <span className="badge-chip bg-white/20">{test.time_limit_minutes} דקות</span>
+                )}
+                <span className="badge-chip bg-white/20">קוד: {test.share_code}</span>
+              </div>
+            </div>
           </div>
         </div>
 
