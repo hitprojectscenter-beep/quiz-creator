@@ -77,11 +77,21 @@ export default function CreateTestPage() {
 
     try {
       // Step 1: Upload and parse files
-      setProgress("מנתח את הקבצים...");
+      const hasImages = files.some((f) =>
+        /\.(jpe?g|png|webp|gif)$/i.test(f.name)
+      );
+      setProgress(
+        hasImages
+          ? "מחלץ טקסט מהתמונות עם AI (זה יכול לקחת דקה)..."
+          : "מנתח את הקבצים..."
+      );
       const formData = new FormData();
       files.forEach((f) => formData.append("files", f.file));
       const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error("שגיאה בעיבוד הקבצים");
+      if (!uploadRes.ok) {
+        const errData = await uploadRes.json().catch(() => ({ error: "שגיאה בעיבוד הקבצים" }));
+        throw new Error(errData.error || "שגיאה בעיבוד הקבצים");
+      }
       const { content } = await uploadRes.json();
 
       // Step 2: Optionally expand with web search
@@ -227,7 +237,9 @@ export default function CreateTestPage() {
             {/* Step 2: Upload Files */}
             <div className="card mb-6 animate-slide-up">
               <h2 className="text-xl font-bold mb-1">2. העלה חומרי לימוד</h2>
-              <p className="text-slate-600 text-sm mb-4">PDF, Word, או טקסט · ניתן להעלות מספר קבצים</p>
+              <p className="text-slate-600 text-sm mb-4">
+                📄 PDF · 📝 Word · 📃 טקסט · 📷 <strong>תמונות (OCR אוטומטי)</strong> · ניתן להעלות מספר קבצים
+              </p>
 
               <div
                 onClick={() => fileInputRef.current?.click()}
@@ -236,11 +248,14 @@ export default function CreateTestPage() {
                 <Upload className="w-12 h-12 mx-auto text-slate-400 mb-3" />
                 <div className="font-medium">לחץ כדי להעלות קבצים</div>
                 <div className="text-sm text-slate-500 mt-1">או גרור לכאן</div>
+                <div className="text-xs text-slate-400 mt-2">
+                  📄 PDF, DOCX, TXT &nbsp;·&nbsp; 📷 JPG, PNG (עד 5MB)
+                </div>
                 <input
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept=".pdf,.docx,.doc,.txt,.md"
+                  accept=".pdf,.docx,.doc,.txt,.md,.jpg,.jpeg,.png,.webp,.gif,image/*"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
