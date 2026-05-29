@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>QuizMaster - מדריך משתמש מלא</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4;
+    margin: 10mm 12mm 12mm 12mm;
+    @bottom-center {
+      content: "QuizMaster · עמוד " counter(page) " מתוך " counter(pages);
+      font-family: 'Heebo', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Heebo', system-ui, sans-serif;
+    direction: rtl;
+    text-align: right;
+    color: #1e293b;
+    line-height: 1.45;
+    font-size: 9pt;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    color: #6366f1;
+    font-size: 20pt;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #6366f1;
+    page-break-after: avoid;
+  }
+  h2 {
+    color: #4f46e5;
+    font-size: 14pt;
+    font-weight: 700;
+    margin: 12px 0 6px 0;
+    padding-right: 8px;
+    border-right: 4px solid #6366f1;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #6366f1;
+    font-size: 11pt;
+    font-weight: 700;
+    margin: 8px 0 4px 0;
+    page-break-after: avoid;
+  }
+  h4 {
+    color: #475569;
+    font-size: 10pt;
+    font-weight: 600;
+    margin: 6px 0 3px 0;
+    page-break-after: avoid;
+  }
+  p { margin: 3px 0; }
+  ul, ol {
+    margin: 4px 0;
+    padding-right: 20px;
+    padding-left: 0;
+  }
+  li { margin: 1px 0; }
+  strong { color: #4338ca; font-weight: 700; }
+  em { color: #db2777; font-style: italic; }
+  a {
+    color: #6366f1;
+    text-decoration: none;
+    border-bottom: 1px dotted #6366f1;
+  }
+  code {
+    background: #f1f5f9;
+    color: #be185d;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 9.5pt;
+    direction: ltr;
+    display: inline-block;
+  }
+  pre {
+    background: linear-gradient(135deg, #1e293b 0%, #312e81 100%);
+    color: #e2e8f0;
+    padding: 14px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 9pt;
+    line-height: 1.5;
+    page-break-inside: avoid;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+  blockquote {
+    margin: 14px 0;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+    border-right: 4px solid #f59e0b;
+    border-radius: 8px;
+    color: #78350f;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 4px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0;
+    direction: rtl;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    page-break-inside: avoid;
+  }
+  th {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    padding: 5px 8px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 9pt;
+  }
+  td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 8.5pt;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  tr:last-child td { border-bottom: none; }
+  hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #6366f1, transparent);
+    margin: 10px 0;
+  }
+  blockquote {
+    margin: 6px 0;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+    border-right: 3px solid #f59e0b;
+    border-radius: 6px;
+    color: #78350f;
+    page-break-inside: avoid;
+    font-size: 8.5pt;
+  }
+  blockquote p { margin: 2px 0; }
+  /* Header banner instead of full cover page */
+  .banner {
+    background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .banner-icon { font-size: 28pt; line-height: 1; }
+  .banner-title { font-size: 18pt; font-weight: 800; color: white; }
+  .banner-sub { font-size: 9pt; opacity: 0.9; margin-top: 2px; }
+  /* TOC styling */
+  ol li, ul li { color: #334155; }
+  /* Emoji spacing */
+  h1, h2, h3, h4, h5 { font-feature-settings: "ss01"; }
+  /* Print optimizations */
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div class="banner-icon">🧠</div>
+  <div>
+    <div class="banner-title">QuizMaster · מדריך משתמש</div>
+    <div class="banner-sub">מערכת ליצירת מבחנים אמריקאיים מקבצים, מופעלת על ידי Claude AI · גרסה 2.0 · 2026</div>
+  </div>
+</div>
+
+<h1 id="quizmaster">🧠 QuizMaster — מדריך משתמש מלא</h1>
+<blockquote>
+<p>מערכת חכמה ליצירת מבחנים אמריקאיים מקבצים · מופעלת על ידי Claude AI<br />
+📍 <a href="https://quiz-creator-lake.vercel.app">quiz-creator-lake.vercel.app</a></p>
+</blockquote>
+<hr />
+<h2 id="1">1. סקירה כללית</h2>
+<p>QuizMaster הופכת כל חומר לימוד למבחן אמריקאי איכותי תוך שניות. הצוות שלך מקבל מבחנים אינטראקטיביים, צובר XP ותגי הישג, ויכול לשתף עם כל אחד דרך קישור או QR — <strong>כולל למי שלא רשום</strong>.</p>
+<p><strong>יתרונות עיקריים:</strong><br />
+- 🤖 <strong>AI איכותי</strong> — Claude מנתח את החומר ויוצר שאלות עם הסברים<br />
+- 🇮🇱 <strong>עברית מלאה</strong> — תמיכה ב-RTL, פונט Heebo, ממשק עברי<br />
+- 🎮 <strong>גיימיפיקציה</strong> — XP, רמות, 12 תגים, רצפים יומיים, לוח מובילים<br />
+- 🔗 <strong>שיתוף ציבורי</strong> — קישור/QR מאפשרים פתרון ללא הרשמה<br />
+- 🖼️ <strong>מיתוג</strong> — לוגו וכותרת מותאמים אישית לכל מבחן<br />
+- 📱 <strong>רספונסיבי</strong> — מובייל, טאבלט ומחשב</p>
+<p><strong>למי זה מתאים?</strong> מורים, מרצים, סטודנטים, חברות הדרכה, וכל מי שרוצה להפוך חומר לבחינה.</p>
+<hr />
+<h2 id="2-30">2. התחלה מהירה (30 שניות)</h2>
+<h3 id="_1">הרשמה</h3>
+<ol>
+<li>עבור ל-<a href="https://quiz-creator-lake.vercel.app">quiz-creator-lake.vercel.app</a> → <strong>"הרשמה חינם"</strong></li>
+<li>מלא: שם מלא · אימייל · סיסמה (לפחות 6 תווים)</li>
+<li>אישור מייל (אם מופעל) → לחץ על הקישור במייל</li>
+<li>מועבר אוטומטית לדשבורד 🎉</li>
+</ol>
+<h3 id="_2">התחברות חוזרת</h3>
+<p><code>/login</code> → אימייל + סיסמה → <strong>"התחבר"</strong></p>
+<hr />
+<h2 id="3">3. יצירת מבחן</h2>
+<p>לחץ <strong>"+ מבחן חדש"</strong> מהדשבורד. התהליך מורכב מ-3 שלבים:</p>
+<h3 id="1_1">שלב 1 — פרטי המבחן</h3>
+<table>
+<thead>
+<tr>
+<th>שדה</th>
+<th>תיאור</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>🖼️ לוגו</strong> (אופציונלי)</td>
+<td>תמונה (PNG/JPG/SVG) עד 500KB. תוצג בפינה שמאלית עליונה של המבחן והשיתוף</td>
+</tr>
+<tr>
+<td><strong>📝 שם המבחן</strong> (אופציונלי)</td>
+<td>עד 100 תווים. אם תשאיר ריק — AI ייצור שם אוטומטית</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2">שלב 2 — העלאת חומרי לימוד</h3>
+<ul>
+<li><strong>פורמטים נתמכים:</strong> PDF · DOCX/DOC · TXT/MD</li>
+<li><strong>מספר קבצים יחד</strong> (מומלץ: עד 5)</li>
+<li>לחץ או גרור לאזור ההעלאה</li>
+<li>⚠️ PDF סרוקים (תמונה בלבד) <strong>אינם נתמכים</strong> — חייב להיות טקסט אמיתי</li>
+</ul>
+<h3 id="3_1">שלב 3 — הגדרות המבחן</h3>
+<table>
+<thead>
+<tr>
+<th>הגדרה</th>
+<th>אפשרויות</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>🎯 מספר שאלות</strong></td>
+<td>5-50 (slider)</td>
+</tr>
+<tr>
+<td><strong>רמת קושי</strong></td>
+<td>😊 קל · 🤔 בינוני · 🔥 קשה</td>
+</tr>
+<tr>
+<td><strong>⏱️ הגבלת זמן</strong></td>
+<td>0 (ללא) עד 60 דקות. כשנשארת דקה הטיימר הופך לאדום, ובסיום הזמן המבחן מוגש אוטומטית</td>
+</tr>
+<tr>
+<td><strong>🌐 חיפוש שאלות באינטרנט</strong></td>
+<td>סמן את התיבה — AI יחפש מידע משלים ויצור שאלות מגוונות יותר. מתאים לנושאים כלליים</td>
+</tr>
+</tbody>
+</table>
+<p>לחץ <strong>"צור מבחן חכם עכשיו"</strong> → המתן 20-60 שניות → מועבר לעמוד השיתוף.</p>
+<blockquote>
+<p>💎 קיבלת <strong>30+ XP</strong> על יצירת המבחן (2 XP לכל שאלה)</p>
+</blockquote>
+<hr />
+<h2 id="4">4. פתירת מבחן</h2>
+<h3 id="_3">הממשק</h3>
+<ul>
+<li><strong>שמאל למעלה:</strong> לוגו (אם הועלה) + יציאה</li>
+<li><strong>מרכז:</strong> שם המבחן + מד התקדמות (X/Y, נענו: Z)</li>
+<li><strong>ימין למעלה:</strong> טיימר (אם יש הגבלת זמן)</li>
+<li><strong>כפתורים למטה:</strong> הקודמת · נקודות מספור (ירוק=נענה) · הבאה</li>
+</ul>
+<h3 id="_4">איך לענות</h3>
+<ol>
+<li>קרא את השאלה → בחר תשובה (A/B/C/D)</li>
+<li>ניתן לשנות תשובה בכל רגע</li>
+<li>בשאלה האחרונה → כפתור <strong>"הגש מבחן"</strong> ירוק (אם ענית על הכל)</li>
+</ol>
+<h3 id="_5">מסך תוצאות</h3>
+<ul>
+<li>אחוז גדול + אימוג'י לפי הציון + ציון XP שצברת</li>
+<li><strong>תגים חדשים</strong> (אם זכית) — אנימציה ובונוס XP</li>
+<li><strong>סקירת תשובות מפורטת:</strong></li>
+<li>🟢 ירוק = ענית נכון · 🔴 אדום = שגוי</li>
+<li><strong>💡 הסבר AI</strong> למה התשובה נכונה</li>
+<li>כפתורים: לדשבורד · נסה שוב · שתף</li>
+</ul>
+<hr />
+<h2 id="5">5. שיתוף מבחנים — הפיצ'ר החזק ביותר</h2>
+<p>QuizMaster מאפשרת <strong>שיתוף ציבורי</strong> — כל מי שמקבל את הקישור יכול לפתור את המבחן <strong>בלי להירשם</strong>.</p>
+<h3 id="_6">מה שמשתמש ציבורי <strong>כן</strong> יכול:</h3>
+<ul>
+<li>✅ לראות את המבחן (לוגו, כותרת, שאלות)</li>
+<li>✅ לפתור את המבחן ולקבל ציון מיידי</li>
+<li>✅ לראות סקירת תשובות עם הסברים</li>
+<li>✅ להירשם בסוף לשמירת XP</li>
+</ul>
+<h3 id="_7">מה הוא <strong>לא</strong> יכול:</h3>
+<ul>
+<li>❌ לגשת לדשבורד שלך · ❌ ליצור מבחנים · ❌ לראות מבחנים אחרים · ❌ לוח מובילים</li>
+</ul>
+<h3 id="4_1">4 דרכי שיתוף</h3>
+<table>
+<thead>
+<tr>
+<th>דרך</th>
+<th>איך</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>📋 <strong>קישור</strong></td>
+<td>"העתק" → הדבק היכן שתרצה. קישור קצר: <code>/q/ABCD1234</code></td>
+</tr>
+<tr>
+<td>📲 <strong>QR קוד</strong></td>
+<td>סרוק עם הטלפון · "הורד QR" לתמונת PNG להדפסה</td>
+</tr>
+<tr>
+<td>💬 <strong>WhatsApp</strong></td>
+<td>פתיחת WhatsApp עם הודעה מוכנה</td>
+</tr>
+<tr>
+<td>📧 <strong>אימייל</strong></td>
+<td>פתיחת לקוח המייל עם נושא וגוף</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_8">חוויית המשתתף הציבורי</h3>
+<ol>
+<li>רואה עמוד פתיחה עם לוגו + כותרת + פרטי המבחן</li>
+<li>ממלא שם (אופציונלי) להצגה בתוצאות</li>
+<li>רואה הודעה: "התוצאות לא יישמרו בלי הרשמה"</li>
+<li>לוחץ "התחל מבחן" → פותר → מקבל ציון + CTA להרשמה</li>
+</ol>
+<hr />
+<h2 id="6-gamification">6. מערכת המשחוק (Gamification)</h2>
+<h3 id="xp">XP — נקודות ניסיון</h3>
+<p><strong>יצירת מבחן:</strong> 30 בסיס + 2 לכל שאלה</p>
+<p><strong>פתירת מבחן:</strong><br />
+| רמת קושי | XP לתשובה נכונה |<br />
+|---|---|<br />
+| 😊 קל | 10 |<br />
+| 🤔 בינוני | 15 |<br />
+| 🔥 קשה | 20 |</p>
+<p><strong>בונוסים:</strong> ציון 90%+ = <strong>+25 XP</strong> · ציון 100% = <strong>+50 XP</strong></p>
+<h3 id="levels">רמות (Levels)</h3>
+<p>כל רמה דורשת <code>level × 100</code> XP נוסף.<br />
+- רמה 2 = 100 XP · רמה 5 = 1,000 XP · רמה 10 = 5,500 XP</p>
+<h3 id="12-badges">12 תגי הישג (Badges)</h3>
+<table>
+<thead>
+<tr>
+<th>תג</th>
+<th>תנאי</th>
+<th>בונוס</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🎯 צעדים ראשונים</td>
+<td>מבחן ראשון שיצרת</td>
+<td>50</td>
+</tr>
+<tr>
+<td>📚 יוצר מנוסה</td>
+<td>5 מבחנים</td>
+<td>100</td>
+</tr>
+<tr>
+<td>🎓 מורה מקצועי</td>
+<td>20 מבחנים</td>
+<td>250</td>
+</tr>
+<tr>
+<td>⭐ לומד מתחיל</td>
+<td>מבחן ראשון שפתרת</td>
+<td>50</td>
+</tr>
+<tr>
+<td>🔥 סטודנט חרוץ</td>
+<td>10 מבחנים</td>
+<td>150</td>
+</tr>
+<tr>
+<td>👑 מאסטר</td>
+<td>50 מבחנים</td>
+<td>500</td>
+</tr>
+<tr>
+<td>💯 מושלם!</td>
+<td>ציון 100%</td>
+<td>100</td>
+</tr>
+<tr>
+<td>🌟 שאיפה למצוינות</td>
+<td>5×100%</td>
+<td>300</td>
+</tr>
+<tr>
+<td>⚡ רצף של 7</td>
+<td>7 ימים רצופים</td>
+<td>200</td>
+</tr>
+<tr>
+<td>🏆 רצף של 30</td>
+<td>30 ימים רצופים</td>
+<td>1,000</td>
+</tr>
+<tr>
+<td>💎 1000 XP</td>
+<td>צברת 1,000 XP</td>
+<td>100</td>
+</tr>
+<tr>
+<td>🚀 5000 XP</td>
+<td>צברת 5,000 XP</td>
+<td>500</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">רצפים יומיים</h3>
+<p>פתרון מבחן בכל יום → הרצף עולה. פספסת יום → מתחיל מ-1. <strong>טיפ:</strong> אפילו מבחן אחד קצר ביום שומר על הרצף.</p>
+<h3 id="leaderboard">לוח המובילים (<code>/leaderboard</code>)</h3>
+<ul>
+<li>🥇🥈🥉 פודיום ל-3 ראשונים · רשימת Top 50</li>
+<li>מציג: רמה · XP · רצף · מבחנים</li>
+<li><strong>שמך מודגש</strong> בכחול</li>
+</ul>
+<hr />
+<h2 id="7">7. דשבורד ופרופיל</h2>
+<h3 id="dashboard">דשבורד (<code>/dashboard</code>)</h3>
+<ul>
+<li><strong>סטטיסטיקות:</strong> 💎 XP+רמה · 🔥 רצף · 📚 שיצרת · 🏆 שפתרת</li>
+<li><strong>כרטיס "צור מבחן חדש"</strong> — מודגש בסגול</li>
+<li><strong>המבחנים שלי</strong> — 6 אחרונים עם כפתורי ▶️ פתור · 🔗 שתף</li>
+<li><strong>תגים שלי</strong> — 8 אחרונים</li>
+<li><strong>פעילות אחרונה</strong> — 5 מבחנים אחרונים שפתרת</li>
+</ul>
+<h3 id="profile">פרופיל (<code>/profile</code>)</h3>
+<ul>
+<li>פרטים אישיים · תאריך הצטרפות</li>
+<li><strong>סטטיסטיקות מפורטות:</strong> XP, רצף, ציון ממוצע</li>
+<li><strong>כל 12 התגים</strong> — שזכית בהם מודגשים, אחרים אפורים</li>
+<li><strong>היסטוריית מבחנים</strong> — 20 ניסיונות אחרונים</li>
+</ul>
+<hr />
+<h2 id="8">8. טיפים, שאלות נפוצות וטיפול בבעיות</h2>
+<h3 id="7_1">💡 7 טיפים לתוצאות מיטביות</h3>
+<ol>
+<li><strong>חומר איכותי = שאלות איכותיות</strong> — PDF/Word ברורים עם טקסט (לא תמונות)</li>
+<li><strong>התחל קל</strong> — מבחן ראשון: 10 שאלות, רמה קלה, קובץ אחד</li>
+<li><strong>שלב מספר מקורות</strong> — 2-3 קבצים על אותו נושא = שאלות עשירות יותר</li>
+<li><strong>חיפוש באינטרנט</strong> — כן לנושאים כלליים (היסטוריה, מדע), לא לחומר ייחודי</li>
+<li><strong>הגבלת זמן</strong> — 30 שניות/שאלה בינוני, 1 דקה ראוי לרוב</li>
+<li><strong>לוגו מקצועי</strong> — PNG עם רקע שקוף, מקסימום 500KB</li>
+<li><strong>רצף יומי</strong> — אפילו מבחן קטן בכל יום שומר על הרצף</li>
+</ol>
+<h3 id="_10">❓ שאלות נפוצות</h3>
+<p><strong>האם הקבצים שלי פרטיים?</strong> ✅ כן. הקבצים מעובדים בזמן אמת ואינם נשמרים. רק השאלות נשמרות.</p>
+<p><strong>כמה זה עולה?</strong> 🆓 ההרשמה והשימוש חינמיים. ה-AI: $5 קרדיט מתנה מ-Anthropic מספיק ל-100-200 מבחנים.</p>
+<p><strong>אפשר לערוך מבחן אחרי יצירה?</strong> ❌ לא בגרסה הנוכחית — צור מבחן חדש.</p>
+<p><strong>מי יכול לראות את המבחנים שלי?</strong> רק מי שיש לו את הקישור הציבורי.</p>
+<h3 id="_11">🆘 פתרון בעיות נפוצות</h3>
+<table>
+<thead>
+<tr>
+<th>בעיה</th>
+<th>פתרון</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>יצירה נתקעת ב-"יוצר שאלות"</td>
+<td>בדוק קרדיט Anthropic ב-<a href="https://console.anthropic.com">console.anthropic.com</a></td>
+</tr>
+<tr>
+<td>"המבחן לא נמצא"</td>
+<td>הקישור שגוי או נמחק — בקש קישור חדש</td>
+</tr>
+<tr>
+<td>שאלות באיכות נמוכה</td>
+<td>העלה יותר חומר או קבצים נוספים</td>
+</tr>
+<tr>
+<td>לוגו לא עולה</td>
+<td>דחס לפחות מ-500KB, השתמש ב-PNG/JPG</td>
+</tr>
+<tr>
+<td>"Email link expired"</td>
+<td>הקישור פג תוקף — הירשם מחדש</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_12">📞 קישורים שימושיים</h2>
+<table>
+<thead>
+<tr>
+<th>מקור</th>
+<th>קישור</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🌐 האפליקציה</td>
+<td>quiz-creator-lake.vercel.app</td>
+</tr>
+<tr>
+<td>📦 קוד מקור</td>
+<td>github.com/hitprojectscenter-beep/quiz-creator</td>
+</tr>
+<tr>
+<td>🤖 AI מודל</td>
+<td>Claude (claude-sonnet-4-6)</td>
+</tr>
+<tr>
+<td>🗄️ מסד נתונים</td>
+<td>Supabase PostgreSQL</td>
+</tr>
+<tr>
+<td>🚀 אירוח</td>
+<td>Vercel</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>🎓 בהצלחה עם המבחנים שלך!</strong> · נוצר עם ❤️ על ידי Claude AI · QuizMaster © 2026</p>
+
+</body>
+</html>
